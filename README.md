@@ -1,63 +1,75 @@
-# Démonstration du Threading en Python
+# Threading vs Multiprocessing en Python
 
-Ce projet illustre les différents aspects du threading en Python, notamment le GIL (Global Interpreter Lock) et ses implications.
+## En Bref
+- **Threading** : Plusieurs threads qui partagent la même mémoire et un UNIQUE GIL (Global Interpreter Lock). Ce GIL fait qu'un seul thread peut exécuter du code Python à la fois.
+- **Multiprocessing** : Plusieurs processus indépendants, chacun avec sa propre mémoire et son propre GIL, qui peuvent s'exécuter vraiment en parallèle.
 
-## 🎯 Objectif du Projet
+## Quand utiliser quoi ?
 
-Ce projet vise à démontrer :
-- Le fonctionnement de base du threading en Python
-- Les limitations du GIL (Global Interpreter Lock)
-- La différence entre le multithreading et le multiprocessing
-- La gestion de la concurrence avec les verrous (locks)
+### Threading ✅
+- Tous les threads partagent le même GIL qui ne permet qu'à un seul thread d'exécuter du code Python à la fois
+- Pour les tâches qui attendent beaucoup (I/O-bound):
+  - Lectures/écritures de fichiers
+  - Requêtes réseau
+  - Appels à une base de données
+  - Téléchargements
+- Exemple: Un serveur web qui attend les réponses de la base de données
 
-## 📁 Structure du Projet
+### Multiprocessing ✅
+- Pour les tâches de calcul intensif (CPU-bound):
+  - Calculs mathématiques complexes
+  - Traitement d'images
+  - Analyses de données
+  - Machine learning
+- Exemple: Calcul de la somme des carrés de millions de nombres
 
-- `base.py` : Exemple basique de threading avec des tâches I/O
-- `cpu_example.py` : Démonstration des limitations du GIL sur les tâches CPU-intensives
-- `mp.py` : Comparaison avec le multiprocessing pour les tâches CPU-intensives
-- `share.py` : Exemple de problème de concurrence sans verrou
-- `share2.py` : Solution au problème de concurrence avec verrou
+## Limitations
 
-## 🔍 Concepts Clés
+### Threading ⚠️
+- Le GIL (Global Interpreter Lock) empêche l'exécution parallèle de code Python
+- Tous les threads se partagent le même et unique GIL
+- Parfait pour les tâches I/O car le GIL est libéré pendant les attentes
+- Mauvais pour les calculs car un seul thread peut exécuter du code Python à la fois
 
-### Le GIL (Global Interpreter Lock)
-- Un verrou global en Python qui permet à un seul thread d'exécuter du code Python à la fois
-- Le GIL est temporairement libéré pendant les opérations I/O (lecture/écriture fichiers, requêtes réseau, etc.)
-- Impact significatif sur les performances des tâches CPU-intensives en multithreading
+### Multiprocessing ⚠️
+- Chaque processus a sa propre mémoire (consomme plus de RAM)
+- Chaque processus a son propre GIL
+- Communication entre processus plus complexe
+- Démarrage plus lent qu'un thread
+- Parfait pour les calculs car chaque processus a son propre GIL
 
-### Threading vs Multiprocessing
-- Threading : Utile pour les tâches I/O-bound (lecture/écriture, réseau)
-- Multiprocessing : Recommandé pour les tâches CPU-bound (calculs intensifs)
+## Fichiers du Projet
 
-## 💡 Exemples Inclus
+### `base.py`
+Exemple basique de threading avec des tâches d'attente (sleep). Montre comment les threads peuvent être efficaces pour les tâches I/O car le GIL est libéré pendant le `sleep()`.
 
-### Exemple de Base (`base.py`)
-Montre comment créer et gérer des threads pour des tâches I/O.
+### `cpu_example.py`
+Démontre les limites du threading pour les calculs CPU-intensifs. Compare l'exécution séquentielle et multithreadée d'un calcul lourd (somme des carrés). Les performances sont similaires à cause du GIL.
 
-### Exemple CPU-intensif (`cpu_example.py`)
-Démontre pourquoi le multithreading n'améliore pas les performances des calculs intensifs.
+### `mp.py`
+Version multiprocessing du même calcul que `cpu_example.py`. Montre comment le multiprocessing permet une vraie exécution parallèle et de meilleures performances pour les calculs.
 
-### Multiprocessing (`mp.py`)
-Illustre comment contourner les limitations du GIL avec le multiprocessing.
+### `share.py`
+Illustre un problème classique de concurrence : plusieurs threads tentent d'incrémenter un compteur sans protection, causant des erreurs de synchronisation.
 
-### Gestion de la Concurrence
-- `share.py` : Montre les problèmes de concurrence sans protection
-- `share2.py` : Illustre l'utilisation correcte des verrous pour protéger les ressources partagées
+### `share2.py`
+Solution au problème de `share.py` en utilisant un verrou (`Lock`). Montre comment protéger correctement une ressource partagée entre threads.
 
-## 🚀 Pour Commencer
+### `as.py`
+Exemple de programmation asynchrone avec `asyncio`. Montre une alternative au threading pour les tâches I/O utilisant un seul thread avec de la concurrence coopérative.
 
-1. Clonez le repository
-2. Exécutez les différents exemples :
-```bash
-python base.py
-python cpu_example.py
-python mp.py
-python share.py
-python share2.py
+## Exemple Simple
+
+```python
+# Threading - Bon pour I/O
+import threading
+thread = threading.Thread(target=fonction_qui_attend)
+
+# Multiprocessing - Bon pour CPU
+import multiprocessing
+process = multiprocessing.Process(target=fonction_qui_calcule)
 ```
 
-## 📝 Notes Importantes
-
-- Le threading en Python est plus efficace pour les tâches I/O que pour les calculs CPU
-- Utilisez le multiprocessing pour les tâches de calcul intensif
-- N'oubliez pas de protéger les ressources partagées avec des verrous
+## En Résumé
+- **Threading** = Un chef de cuisine qui doit alterner entre plusieurs tâches (un seul GIL partagé)
+- **Multiprocessing** = Plusieurs chefs qui travaillent vraiment en même temps (chacun son GIL)
